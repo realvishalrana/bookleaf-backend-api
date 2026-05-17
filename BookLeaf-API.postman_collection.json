@@ -1,0 +1,395 @@
+{
+  "info": {
+    "name": "BookLeaf API",
+    "description": "Complete Postman collection for the BookLeaf Publishing Support Portal API.\n\n**Base URL:** `http://localhost:4000`\n\n**How to use:**\n1. Run `Login as Admin` or `Login as Author` — the token is auto-saved to the `authToken` variable.\n2. All subsequent requests use `{{authToken}}` automatically.\n3. Replace `{{ticketId}}` in URL variables with a real ticket ID after creating one.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" },
+    { "key": "ticketId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+            "description": "Verify the API is running."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('authToken', json.accessToken);",
+                  "  console.log('Token saved:', json.accessToken.slice(0,20) + '...');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@bookleaf.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "description": "Login with admin credentials. The JWT is automatically saved to `authToken`."
+          }
+        },
+        {
+          "name": "Login as Author",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('authToken', json.accessToken);",
+                  "  console.log('Token saved:', json.accessToken.slice(0,20) + '...');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"arjun.sharma@example.com\",\n  \"password\": \"author123\"\n}"
+            },
+            "description": "Login with an author account. The JWT is automatically saved to `authToken`."
+          }
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/auth/me", "host": ["{{baseUrl}}"], "path": ["api","v1","auth","me"] },
+            "description": "Returns the authenticated user's profile."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Author — Books",
+      "item": [
+        {
+          "name": "List My Books",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/author/books", "host": ["{{baseUrl}}"], "path": ["api","v1","author","books"] },
+            "description": "Returns all books for the logged-in author with royalty data."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Author — Tickets",
+      "item": [
+        {
+          "name": "List My Tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/author/tickets", "host": ["{{baseUrl}}"], "path": ["api","v1","author","tickets"] },
+            "description": "Returns all support tickets submitted by the logged-in author."
+          }
+        },
+        {
+          "name": "Create Ticket (no attachment)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.ticket && json.ticket.id) {",
+                  "  pm.collectionVariables.set('ticketId', json.ticket.id);",
+                  "  console.log('ticketId saved:', json.ticket.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/author/tickets", "host": ["{{baseUrl}}"], "path": ["api","v1","author","tickets"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "subject", "value": "Royalty payment missing for last 8 months", "type": "text" },
+                { "key": "description", "value": "I have not received any royalty payments for my book since March 2025. My contract states payments should be made quarterly. This is causing serious financial hardship and I need this resolved immediately.", "type": "text" },
+                { "key": "bookId", "value": "", "type": "text", "description": "Optional — leave empty for General / Account" }
+              ]
+            },
+            "description": "Creates a new ticket (multipart/form-data). AI classification runs automatically. The new `ticketId` is saved automatically."
+          }
+        },
+        {
+          "name": "Create Ticket (with image attachment)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.ticket && json.ticket.id) {",
+                  "  pm.collectionVariables.set('ticketId', json.ticket.id);",
+                  "  console.log('ticketId saved:', json.ticket.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/author/tickets", "host": ["{{baseUrl}}"], "path": ["api","v1","author","tickets"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "subject", "value": "Pages are blurry and binding is falling apart", "type": "text" },
+                { "key": "description", "value": "Several customers have complained that the printed copies of my book have very poor print quality. The text on pages 45-80 is blurry and the spine binding is coming apart after minimal use.", "type": "text" },
+                { "key": "attachment", "type": "file", "src": "", "description": "Select an image file (jpeg/png/gif/webp, max 5MB)" }
+              ]
+            },
+            "description": "Creates a ticket with an image attachment. Select a file in the `attachment` field."
+          }
+        },
+        {
+          "name": "Get Ticket Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/author/tickets/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","author","tickets","{{ticketId}}"] },
+            "description": "Get full ticket detail including messages and attachment URL."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Ticket Queue",
+      "item": [
+        {
+          "name": "List All Tickets (urgency sort)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets?sort=urgency", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets"], "query": [{ "key": "sort", "value": "urgency" }] },
+            "description": "Returns all tickets sorted by urgency (CRITICAL first)."
+          }
+        },
+        {
+          "name": "List Tickets — Filter by Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/tickets?status=OPEN&sort=newest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","admin","tickets"],
+              "query": [
+                { "key": "status", "value": "OPEN", "description": "OPEN | IN_PROGRESS | RESOLVED | CLOSED" },
+                { "key": "sort", "value": "newest" }
+              ]
+            },
+            "description": "Filter tickets by status. Status values: OPEN, IN_PROGRESS, RESOLVED, CLOSED."
+          }
+        },
+        {
+          "name": "List Tickets — Filter by Category",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/tickets?category=ROYALTY_PAYMENTS",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","admin","tickets"],
+              "query": [
+                { "key": "category", "value": "ROYALTY_PAYMENTS", "description": "ROYALTY_PAYMENTS | ISBN_METADATA | PRINTING_QUALITY | DISTRIBUTION_AVAILABILITY | BOOK_STATUS_PRODUCTION | GENERAL_INQUIRY" }
+              ]
+            },
+            "description": "Filter by category. Values: ROYALTY_PAYMENTS, ISBN_METADATA, PRINTING_QUALITY, DISTRIBUTION_AVAILABILITY, BOOK_STATUS_PRODUCTION, GENERAL_INQUIRY."
+          }
+        },
+        {
+          "name": "List Tickets — Filter by Priority",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/tickets?priority=CRITICAL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","admin","tickets"],
+              "query": [
+                { "key": "priority", "value": "CRITICAL", "description": "CRITICAL | HIGH | MEDIUM | LOW" }
+              ]
+            },
+            "description": "Filter by priority: CRITICAL, HIGH, MEDIUM, LOW."
+          }
+        },
+        {
+          "name": "List Tickets — Date Range",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/tickets?from=2025-01-01T00:00:00Z&to=2026-12-31T23:59:59Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","v1","admin","tickets"],
+              "query": [
+                { "key": "from", "value": "2025-01-01T00:00:00Z" },
+                { "key": "to", "value": "2026-12-31T23:59:59Z" }
+              ]
+            },
+            "description": "Filter tickets created within a date range (ISO 8601)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Ticket Detail & Actions",
+      "item": [
+        {
+          "name": "Get Ticket Detail (+ AI draft)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}"] },
+            "description": "Returns full ticket detail including messages, internal notes, AI draft response, and attachment URL."
+          }
+        },
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "description": "Update ticket status. Values: OPEN, IN_PROGRESS, RESOLVED, CLOSED."
+          }
+        },
+        {
+          "name": "Override Category & Priority",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminCategory\": \"ROYALTY_PAYMENTS\",\n  \"adminPriority\": \"CRITICAL\"\n}"
+            },
+            "description": "Admin override for AI-assigned category and priority."
+          }
+        },
+        {
+          "name": "Assign Ticket to Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedAdminId\": \"PASTE_ADMIN_USER_ID_HERE\"\n}"
+            },
+            "description": "Assign the ticket to a specific admin. Get admin IDs from the List Admins endpoint."
+          }
+        },
+        {
+          "name": "Send Reply to Author",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}/messages", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}","messages"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Thank you for reaching out. We have escalated your royalty payment concern to the finance team and will respond within 2 business days.\",\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "description": "Send a reply visible to the author. Optionally update ticket status at the same time. Emits a real-time Socket.io event."
+          }
+        },
+        {
+          "name": "Add Internal Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}/notes", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}","notes"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Checked finance records — last payment was March 2025. Escalating to accounts team.\"\n}"
+            },
+            "description": "Add an internal note visible only to admins."
+          }
+        },
+        {
+          "name": "Regenerate AI Draft",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/tickets/{{ticketId}}/ai/draft", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","tickets","{{ticketId}}","ai","draft"] },
+            "description": "Force-regenerate the AI draft response for a ticket. Returns 503 if AI is unavailable."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Admins",
+      "item": [
+        {
+          "name": "List Admins",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/admins", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","admins"] },
+            "description": "Returns all admin users. Use their IDs for ticket assignment."
+          }
+        }
+      ]
+    }
+  ]
+}
