@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -81,9 +81,9 @@ model Book {
   mrp                   Int?
   authorRoyaltyPerCopy  Int?
   totalCopiesSold       Int       @default(0)
-  totalRoyaltyEarned    Decimal   @default(0) @db.Decimal(12, 2)
-  royaltyPaid           Decimal   @default(0) @db.Decimal(12, 2)
-  royaltyPending        Decimal   @default(0) @db.Decimal(12, 2)
+  totalRoyaltyEarned    Decimal   @default(0)
+  royaltyPaid           Decimal   @default(0)
+  royaltyPending        Decimal   @default(0)
   lastRoyaltyPayoutDate DateTime?
   printPartner          String?
   availableOn           Json?
@@ -102,7 +102,7 @@ model Ticket {
   authorId    String
   bookId      String?
   subject     String
-  description String @db.Text
+  description String
   attachmentName String?
   attachmentUrl  String?
 
@@ -113,10 +113,10 @@ model Ticket {
   adminCategory   TicketCategory?
   adminPriority   Priority?
 
-  aiDraftResponse    String? @db.Text
+  aiDraftResponse    String?
   aiLastError        String?
   aiSimilarTicketIds String?
-  aiSummary          String? @db.Text
+  aiSummary          String?
 
   assignedAdminId String?
 
@@ -142,7 +142,7 @@ model TicketMessage {
   id       String @id @default(cuid())
   ticketId String
   senderId String
-  body     String @db.Text
+  body     String
   isFromAdmin Boolean @default(false)
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -157,7 +157,7 @@ model TicketNote {
   id       String @id @default(cuid())
   ticketId String
   adminId  String
-  body     String @db.Text
+  body     String
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   admin  User   @relation(fields: [adminId], references: [id], onDelete: Cascade)
