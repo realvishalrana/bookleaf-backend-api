@@ -1,7 +1,7 @@
 import http from "http";
 import { createApp } from "./app";
 import { env } from "./config/env";
-import { initSocket } from "./services/realtime/socket";
+import { initSocket } from "./infrastructure/realtime/socket";
 
 const app = createApp();
 const server = http.createServer(app);

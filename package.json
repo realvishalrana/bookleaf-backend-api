@@ -11,8 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:push": "prisma db push",
-    "db:check": "ts-node --transpile-only scripts/check-db.ts",
-    "db:up": "docker compose up -d"
+    "db:check": "ts-node --transpile-only scripts/check-db.ts"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"

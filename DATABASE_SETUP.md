@@ -1,54 +1,45 @@
-# Database setup
+# Database setup (SQLite)
 
-## Option A — Docker (recommended, matches `.env` default)
+The API uses **SQLite** via Prisma. No Docker or separate database server is required.
 
-1. **Start Docker Desktop** (must be running).
-2. In `bookleaf-api`:
+## Local setup
+
+1. Copy env and install:
 
 ```bash
-docker compose up -d
-sleep 10
+cp .env.example .env
+npm install
+```
+
+2. Default `DATABASE_URL` in `.env`:
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+```
+
+3. Create schema and seed:
+
+```bash
+npx prisma generate
 npx prisma migrate deploy
 npm run db:seed
 npm run dev
 ```
 
-Default URL (already in `.env`):
+## Production (e.g. EC2)
+
+Use a file path on the server, for example:
 
 ```env
-DATABASE_URL="mysql://root:password@localhost:3306/bookleaf"
+DATABASE_URL="file:./prisma/prod.db"
 ```
 
----
-
-## Option B — Your own MySQL (Homebrew, MAMP, etc.)
-
-1. Create the database:
-
-```sql
-CREATE DATABASE IF NOT EXISTS bookleaf;
-```
-
-2. Update **`bookleaf-api/.env`** with **your** username and password:
-
-```env
-# No password (some local installs):
-DATABASE_URL="mysql://root@localhost:3306/bookleaf"
-
-# With password:
-DATABASE_URL="mysql://root:YOUR_REAL_PASSWORD@localhost:3306/bookleaf"
-```
-
-3. Run migrations and seed:
+Run migrations and seed once after deploy:
 
 ```bash
-cd bookleaf-api
 npx prisma migrate deploy
 npm run db:seed
-npm run dev
 ```
-
----
 
 ## Verify connection
 

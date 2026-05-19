@@ -5,16 +5,15 @@ import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { env } from "./config/env";
 import { swaggerSpec } from "./config/swagger";
-import authRoutes from "./routes/auth.routes";
-import authorRoutes from "./routes/author.routes";
-import adminRoutes from "./routes/admin.routes";
-import { errorHandler } from "./middleware/errorHandler";
+import authRoutes from "./modules/auth/auth.routes";
+import authorRoutes from "./modules/author";
+import adminRoutes from "./modules/admin";
+import healthRoutes from "./modules/health/health.routes";
+import { errorHandler } from "./shared/middleware/errorHandler";
 
 export function createApp() {
   const app = express();
 
-  // Serve uploaded files before helmet so the CORP header is cross-origin,
-  // allowing the browser on :3000/:3001 to load images from :4000.
   app.use(
     "/uploads",
     (_req, res, next) => {
@@ -33,26 +32,7 @@ export function createApp() {
   );
   app.use(express.json({ limit: "1mb" }));
 
-  /**
-   * @openapi
-   * /health:
-   *   get:
-   *     tags: [Health]
-   *     summary: Health check
-   *     security: []
-   *     responses:
-   *       200:
-   *         description: API is running
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 status: { type: string, example: ok }
-   */
-  app.get("/health", (_req, res) => {
-    res.json({ status: "ok" });
-  });
+  app.use("/health", healthRoutes);
 
   app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.get("/api/docs.json", (_req, res) => {

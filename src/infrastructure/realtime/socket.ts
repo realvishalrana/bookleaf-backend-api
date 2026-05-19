@@ -2,8 +2,8 @@ import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import { Role } from "@prisma/client";
 import { env } from "../../config/env";
-import { verifyToken } from "../../middleware/auth";
-import { prisma } from "../../lib/prisma";
+import { verifyToken } from "../../shared/middleware/auth";
+import { prisma } from "../../shared/lib/prisma";
 
 let io: Server | null = null;
 

@@ -34,7 +34,6 @@ export function recordAiSuccess(): void {
 
 export function recordAiFailure(err?: unknown): void {
   consecutiveFailures += 1;
-  // Do not trip circuit on rate limits — user can retry soon
   if (err && typeof err === "object" && (err as { status?: number }).status === 429) {
     return;
   }
@@ -81,7 +80,6 @@ Rules: unpaid royalties 6+ months = CRITICAL or HIGH; printing defects = HIGH; b
         return { result: null, error: "Empty AI response" };
       }
 
-      // Strip markdown fences if the model wrapped the JSON
       const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
       const parsed = JSON.parse(jsonStr) as {
         category: string;

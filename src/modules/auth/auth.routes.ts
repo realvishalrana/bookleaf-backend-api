@@ -1,16 +1,10 @@
 import { Router } from "express";
-import bcrypt from "bcrypt";
-import { z } from "zod";
-import { prisma } from "../lib/prisma";
-import { authenticate, signToken } from "../middleware/auth";
-import { validateBody } from "../middleware/validate";
+import { authenticate } from "../../shared/middleware/auth";
+import { validateBody } from "../../shared/middleware/validate";
+import { loginSchema } from "./auth.schema";
+import { authController } from "./auth.controller";
 
 const router = Router();
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
 
 /**
  * @openapi
@@ -41,30 +35,7 @@ const loginSchema = z.object({
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post("/login", validateBody(loginSchema), async (req, res, next) => {
-  try {
-    const { email, password } = req.body as z.infer<typeof loginSchema>;
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      res.status(401).json({ error: "Invalid email or password" });
-      return;
-    }
-
-    const token = signToken(user);
-    res.json({
-      accessToken: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        authorId: user.authorId,
-        name: user.name,
-      },
-    });
-  } catch (e) {
-    next(e);
-  }
-});
+router.post("/login", validateBody(loginSchema), authController.login);
 
 /**
  * @openapi
@@ -85,8 +56,6 @@ router.post("/login", validateBody(loginSchema), async (req, res, next) => {
  *       401:
  *         description: Unauthorized
  */
-router.get("/me", authenticate, (req, res) => {
-  res.json({ user: req.user });
-});
+router.get("/me", authenticate, authController.me);
 
 export default router;
