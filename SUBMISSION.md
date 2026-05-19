@@ -16,9 +16,9 @@ Three private repositories:
 
 ```bash
 cd bookleaf-api
-docker compose up -d   # or use your own MySQL 8
 cp .env.example .env
 npm install
+npx prisma generate
 npx prisma migrate deploy
 npm run db:seed
 npm run dev
@@ -62,8 +62,7 @@ Socket.io on the API server. Authors join `author:{authorId}` and `ticket:{ticke
 
 | Service | Host |
 |---------|------|
-| MySQL | Railway / PlanetScale |
-| API | Railway (WebSockets enabled) |
+| API | Railway / EC2 (WebSockets enabled; SQLite file on disk) |
 | Author app | Vercel |
 | Admin app | Vercel (separate project) |
 
@@ -81,4 +80,4 @@ _Add your deployed URLs here after deployment:_
 
 - File attachment is UI-only (per assignment)
 - KB retrieval uses category→section mapping (no vector DB)
-- Docker Compose requires Docker Desktop running locally
+- SQLite is file-based; back up `prisma/*.db` on production servers

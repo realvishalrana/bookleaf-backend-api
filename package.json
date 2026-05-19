@@ -4,15 +4,14 @@
   "description": "BookLeaf Author Support Portal API",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc && cp -r src/data dist/data",
-    "start": "node dist/server.js",
+    "dev": "node init && ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "node init && tsc && cp -r src/data dist/data",
+    "start": "node init && node dist/server.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:push": "prisma db push",
-    "db:check": "ts-node --transpile-only scripts/check-db.ts",
-    "db:up": "docker compose up -d"
+    "db:check": "ts-node --transpile-only scripts/check-db.ts"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
@@ -30,6 +29,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.1.1",
+    "node-fetch": "^3.3.2",
     "openai": "^4.96.0",
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
