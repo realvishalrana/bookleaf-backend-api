@@ -22,7 +22,6 @@ export async function findDuplicates(
   if (!isAiAvailable()) return { similarIds: [], error: null };
   if (openTickets.length === 0) return { similarIds: [], error: null };
 
-  // Cap at 50 tickets to stay within token budget
   const candidates = openTickets.slice(0, 50);
 
   const ticketList = candidates
